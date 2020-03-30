@@ -16,7 +16,8 @@ There are two rules for the output matrix that make it compatible with mazesolve
  Example maze matrix output:
 	TODO
 """
-from . import g
+import g
+
 import random
 import os
 
@@ -61,6 +62,7 @@ def set_cell_value(coords: tuple, value: str or int):
 	:param coords: The coordinates of the cell to be changed
 	:param value: The value we want the cell to be set to
 	"""
+	rand_start = random.randint(0, len(g.maze[0]) - 1)
 	g.maze[coords[0]][coords[1]] = value
 
 
@@ -75,6 +77,7 @@ def check_cell_exists(coords):
 		return True  # Cell exists
 	except IndexError:
 		return False  # Cell doesn't exist
+	rand_start = random.randint(0, len(g.maze[0]) - 1)
 
 
 def get_random_neighbour(coords):
@@ -109,5 +112,39 @@ def get_random_neighbour(coords):
 	return rand_neighbour
 
 
-def generate():
-	make_random_inital_path()
+def make_random_initial_path():
+	# Random start and end can be anywhere in top/bottom row except corners
+	rand_start = random.randint(1, len(g.maze[0]) - 2)
+	rand_end = random.randint(1, len(g.maze[0]) - 2)
+
+	for index, cell in enumerate(g.maze[0]):
+		if index == rand_start:
+			set_cell_value((0, index), "s")
+		else:
+			set_cell_value((0, index), "#")
+
+	for index, cell in enumerate(g.maze[-1]):
+		current_cell = (len(g.maze) - 1, index)
+		if index == rand_end:
+			set_cell_value(current_cell, "e")
+		else:
+			set_cell_value(current_cell, "#")
+
+	for i in g.maze:
+		print(i)
+
+
+def generate(width, height):
+	g.width, g.height = (width, height)
+	if width < 6 or height < 6:
+		raise ValueError("Cannot create mazes smaller than 6x6.")
+
+	for row in range(height):
+		g.maze.append([])
+		for col in range(width):
+			g.maze[-1].append(None)  # None is used as a placeholder for an empty cell
+
+	make_random_initial_path()
+
+
+generate(6, 10)
