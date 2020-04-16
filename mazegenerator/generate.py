@@ -1,6 +1,7 @@
-## generate.py - Created by Tommy Dougiamas as a part of mazegenerator
+#!/usr/bin/env python3
 """
-This file contains all functions that create a random maze matrix.
+Creates a maze matrix that can be converted into an image:
+
 The maze is compatible with mazesolver (https://github.com/exciteabletom/mazesolver)
 The maze is represented in the matrix as follows:
  - Walls:   "#"
@@ -13,138 +14,146 @@ There are two rules for the output matrix that make it compatible with mazesolve
  - Walls around the entire maze
  - One entrance on the top row and one exit on the bottom row
 
- Example maze matrix output:
-	TODO
+Example output (5x5):
+
+   [["#", "#", "#", "s", "#"],
+    ["#", "#", ".", ".", "#"],
+    ["#", ".", ".", "#", "#"],
+    ["#", ".", ".", ".", "#"],
+    ["#", ".", "#", "#", "#"],
+    ["#", "e", "#", "#", "#"]]
 """
+import mazeutils as mu
 import g
 
-import random
 import os
+import random
 
-random.seed(os.urandom(200))  # Seed the random generator with random bytes
+random.seed(os.urandom(200))
+
+width = 10
+height = 10
 
 
-def get_cells_by_value(value):
+def init_maze(width, height):
 	"""
-	Get cell coordinates based on the value of the cell.
-
-	:param value: The value to search cells for
-	:return: list of all coordinates that contain the specified value
+	Initialises a maze with all walls except for an entrance and exit.
 	"""
-	all_matching_cells = []  # the list containing all the coordinates of cells
-	for row_index, row in enumerate(g.maze):
-		for column_index, cell in enumerate(row):
-			if cell == value:
-				all_matching_cells.append((row_index, column_index))
+	g.maze = []
+	for x in range(width):
+		g.maze.append([])
+		for y in range(height):
+			g.maze[-1].append("#")
 
-	return all_matching_cells
+	start_pos = random.randint(1, len(g.maze[0]) - len(g.maze[0]) / 2)
+	end_pos = random.randint(len(g.maze[-1]) / 2, len(g.maze[-1]) - 2)
+
+	g.maze[0][start_pos] = "s"
+	g.maze[1][start_pos] = 0
+
+	g.maze[-1][end_pos] = "e"
 
 
-def get_cell_by_value(value):
+def enumerate_maze():
 	"""
-	The same as get_cells_by_value, except raises a ValueError if there is more than one cell with that value
-
-	:param value: The value to search cells for
-	:raises ValueError: If more then one of the value is found in the maze.
-	:return: the cell coordinate that contains the value
+	TODO
 	"""
-	values = get_cells_by_value(value)
-	if len(values) > 1:
-		raise ValueError(f"Expected only one cell to have value '{value}'. {len(values)} cells contained the value.")
+	counter = 0
 
-	return values[0]
+	while True:  # Enumerate maze
+		current_cells = mu.get_cells_by_value(counter)
+		neighbours = []
+		for cell in current_cells:
+			for i in mu.get_cell_neighbours(cell, "#"):
+				neighbours.append(i)
 
-
-def set_cell_value(coords: tuple, value: str or int):
-	"""
-	Sets the value of a cell at the specified coordinates.
-
-	:param coords: The coordinates of the cell to be changed
-	:param value: The value we want the cell to be set to
-	"""
-	rand_start = random.randint(0, len(g.maze[0]) - 1)
-	g.maze[coords[0]][coords[1]] = value
-
-
-def check_cell_exists(coords):
-	"""
-	Checks if a cell exists within the maze
-	:param coords: A tuple (x,y), representing a cell
-	:return bool: True if cell exists, False otherwise
-	"""
-	try:
-		_ = g.maze[coords[0]][coords[1]]  # Will throw IndexError if the cell is out of the maze area
-		return True  # Cell exists
-	except IndexError:
-		return False  # Cell doesn't exist
-	rand_start = random.randint(0, len(g.maze[0]) - 1)
-
-
-def get_random_neighbour(coords):
-	"""
-	Gets a random cell neighbouring the cell at coords
-	:param coords: Tuple (x,y), containing coordinates to a cell in g.maze
-	:return: Coordinates of a cell neighbouring the one at coords, selected at random
-	"""
-	# different tuples that contain the coords of all positions
-	# relative to our input tuple
-	left = (coords[0] - 1, coords[1])
-	right = (coords[0] + 1, coords[1])
-	up = (coords[0], coords[1] - 1)
-	down = (coords[0], coords[1] + 1)
-
-	# list containing all directional tuples
-	all_dirs = [left, right, up, down]
-	neighbours = []
-
-	for dir in all_dirs:
-		try:
-			_ = g.maze[dir[0]][dir[1]]
-			neighbours.append(dir)
-
-		except IndexError:
-			pass
-
-	if len(neighbours) == 0:
-		raise ValueError("Could not find any neighbouring cells.")
-
-	rand_neighbour = neighbours[random.randint(0, len(neighbours) - 1)]
-	return rand_neighbour
-
-
-def make_random_initial_path():
-	# Random start and end can be anywhere in top/bottom row except corners
-	rand_start = random.randint(1, len(g.maze[0]) - 2)
-	rand_end = random.randint(1, len(g.maze[0]) - 2)
-
-	for index, cell in enumerate(g.maze[0]):
-		if index == rand_start:
-			set_cell_value((0, index), "s")
+		if neighbours:
+			for cell in neighbours:
+				mu.set_cell_value(cell, counter + 1)
 		else:
-			set_cell_value((0, index), "#")
+			break
 
-	for index, cell in enumerate(g.maze[-1]):
-		current_cell = (len(g.maze) - 1, index)
-		if index == rand_end:
-			set_cell_value(current_cell, "e")
-		else:
-			set_cell_value(current_cell, "#")
+		counter += 1
+
+	start = mu.get_cell_by_value("s")
+
+	mu.set_cell_value((start[0] + 1, start[1]), 0)
 
 	for i in g.maze:
 		print(i)
 
 
+def init_solution_path():
+	"""
+	Creates a randomized solution path through the maze.
+	"""
+	end = mu.get_cell_by_value("e")
+	counter = mu.get_cell_value((end[0] - 1, end[1]))  # To account for first cell being 0
+	current_cell = (end[0] - 1, end[1])
+	mu.set_cell_value(current_cell, ".")
+
+	while True:
+		raw_options = mu.get_cell_neighbours(current_cell, int)
+
+		options = []
+		for cell in raw_options:
+			cell_value = mu.get_cell_value(cell)
+
+			if cell_value == counter - 1:
+				options.append(cell)
+
+		random_cell_index = 0
+
+		if len(options) > 1:
+			random_cell_index = random.randint(0, len(options) - 1)
+		elif len(options) == 0:
+			break
+
+		random_cell = options[random_cell_index]
+		mu.set_cell_value(random_cell, ".")
+
+		current_cell = random_cell
+
+		counter -= 1
+		print(f"\n{counter}\n")
+		for i in g.maze:
+			print(i)
+
+
+def expand_row(row_index):
+	"""
+	'expands' rows by adding random paths on, above, and below the rows
+	:param row_index: The row to expand.
+	"""
+	row = g.maze[row_index]
+	for index, cell in enumerate(row):
+		neighbours = mu.get_cell_neighbours((row_index, index), "#")
+		for neighbour in neighbours:
+			if random.randint(0, 10) <= 1:  #
+				mu.set_cell_value(neighbour, ".")
+
+
 def generate(width, height):
-	g.width, g.height = (width, height)
-	if width < 6 or height < 6:
-		raise ValueError("Cannot create mazes smaller than 6x6.")
+	"""
+	Main function that creates the maze.
+	:param width: Width of the matrix
+	:param height: Height of the matrix
+	:return: A maze matrix
+	"""
+	init_maze(width, height)
+	enumerate_maze()
+	init_solution_path()
 
-	for row in range(height):
-		g.maze.append([])
-		for col in range(width):
-			g.maze[-1].append(None)  # None is used as a placeholder for an empty cell
+	for row_index, row in enumerate(g.maze):
+		for cell_index, cell in enumerate(row):
+			if type(cell) == int:
+				g.maze[row_index][cell_index] = "#"
 
-	make_random_initial_path()
+	for row in range(len(g.maze) - 1):
+		if row % 2 == 0:
+			expand_row(row)
 
 
-generate(6, 10)
+if __name__ == "__main__":  # Testing
+	generate(20, 20)
+
