@@ -1,5 +1,5 @@
 # mazeutils - Tommy Dougiamas
-import g
+from . import g
 
 maze = None
 

@@ -69,11 +69,11 @@ def main():
 				skip_next_arg = True  # We don't need to parse the next arg as it is a file-path
 
 			elif arg == "-x" or arg == "--width":
-				width = cmd_args[index + 1]
+				width = int(cmd_args[index + 1])
 				skip_next_arg = True  # We don't need to parse the next arg as it is a file-path
 
 			elif arg == "-y" or arg == "--height":
-				height = cmd_args[index + 1]  # the argument after '-o' is the output path
+				height = int(cmd_args[index + 1])  # the argument after '-o' is the output path
 				skip_next_arg = True  # We don't need to parse the next arg as it is a file-path
 
 			else:
@@ -93,3 +93,5 @@ def main():
 		cmd_error(f"Please supply a height and a width! Use -x and -y")
 
 	generate.generate(width, height)
+
+	create_output_image.create(g.maze, output_dir)

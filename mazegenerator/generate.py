@@ -23,16 +23,13 @@ Example output (5x5):
     ["#", ".", "#", "#", "#"],
     ["#", "e", "#", "#", "#"]]
 """
-import mazeutils as mu
-import g
+from . import mazeutils as mu
+from . import g
 
 import os
 import random
 
 random.seed(os.urandom(200))
-
-width = 10
-height = 10
 
 
 def init_maze(width, height):
@@ -79,9 +76,6 @@ def enumerate_maze():
 
 	mu.set_cell_value((start[0] + 1, start[1]), 0)
 
-	for i in g.maze:
-		print(i)
-
 
 def init_solution_path():
 	"""
@@ -115,9 +109,6 @@ def init_solution_path():
 		current_cell = random_cell
 
 		counter -= 1
-		print(f"\n{counter}\n")
-		for i in g.maze:
-			print(i)
 
 
 def expand_row(row_index):
@@ -129,7 +120,7 @@ def expand_row(row_index):
 	for index, cell in enumerate(row):
 		neighbours = mu.get_cell_neighbours((row_index, index), "#")
 		for neighbour in neighbours:
-			if random.randint(0, 10) <= 1:  #
+			if random.randint(0, 5) <= 1:
 				mu.set_cell_value(neighbour, ".")
 
 
@@ -153,7 +144,5 @@ def generate(width, height):
 		if row % 2 == 0:
 			expand_row(row)
 
-
-if __name__ == "__main__":  # Testing
-	generate(20, 20)
-
+	for i in g.maze:
+		print(i)
