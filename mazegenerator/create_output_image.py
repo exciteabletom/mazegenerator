@@ -18,23 +18,17 @@ def create(matrix, output_dir=None):
 	:param output_dir: String with User-supplied path to a directory where the image will be saved.
 	"""
 	# open the image that was inputted
-	output_image = Image.new("RGB", [len(matrix[0]), len(matrix)], (255, 255 ,255))
-	data = output_image.load()
-	output_image.save("./test.jpg")
+	output_image = Image.new("RGB", [len(matrix[0]), len(matrix)], (255, 255, 255))
 
-	for x in range(0, len(matrix)):
-		for y in range(0, len(matrix[-1])):
-			cell = matrix[x][y]
+	for y in range(0, len(matrix)):
+		for x in range(0, len(matrix[-1])):
+			cell = matrix[y][x]
 
-			if cell == "s" or cell == ".":
+			if cell == "." or cell == "s" or cell == "e":
 				color = (255, 255, 255)
-
-			elif cell == "e" or cell == "#":
+			elif cell == "#":
 				color = (0, 0, 0)
-			else:
-				raise ValueError("Some items in the matrix were not recognised.")
-			print(x, y)
-			output_image.save(f"./maze{x}{y}.jpg")
+
 			output_image.putpixel((x, y), color)
 
 	out_path = Path(f"{output_dir}/maze.jpg")  # Where the image will be saved to

@@ -42,8 +42,8 @@ def init_maze(width, height):
 		for y in range(height):
 			g.maze[-1].append("#")
 
-	start_pos = random.randint(1, len(g.maze[0]) - len(g.maze[0]) / 2)
-	end_pos = random.randint(len(g.maze[-1]) / 2, len(g.maze[-1]) - 2)
+	start_pos = random.randint(1, 5)
+	end_pos = random.randint(len(g.maze[-1]) - 5, len(g.maze[-1]) - 2)
 
 	g.maze[0][start_pos] = "s"
 	g.maze[1][start_pos] = 0
@@ -98,7 +98,7 @@ def init_solution_path():
 
 		random_cell_index = 0
 
-		if len(options) > 1:
+		if len(options) > 1 and random.randint(0, 1) == 0:
 			random_cell_index = random.randint(0, len(options) - 1)
 		elif len(options) == 0:
 			break
@@ -120,7 +120,7 @@ def expand_row(row_index):
 	for index, cell in enumerate(row):
 		neighbours = mu.get_cell_neighbours((row_index, index), "#")
 		for neighbour in neighbours:
-			if random.randint(0, 5) <= 1:
+			if random.randint(0, 10) <= 3:
 				mu.set_cell_value(neighbour, ".")
 
 
@@ -131,10 +131,13 @@ def generate(width, height):
 	:param height: Height of the matrix
 	:return: A maze matrix
 	"""
+	print("INITIALISING MAZE")
 	init_maze(width, height)
+	print("ENUMERATING MAZE")
 	enumerate_maze()
+	print("CREATING SOLUTION PATH")
 	init_solution_path()
-
+	print("PREPARING FOR ROW EXPANSION")
 	for row_index, row in enumerate(g.maze):
 		for cell_index, cell in enumerate(row):
 			if type(cell) == int:
@@ -142,7 +145,6 @@ def generate(width, height):
 
 	for row in range(len(g.maze) - 1):
 		if row % 2 == 0:
+			print(f"EXPANDING ROW {row}")
 			expand_row(row)
 
-	for i in g.maze:
-		print(i)

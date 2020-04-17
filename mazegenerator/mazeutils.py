@@ -1,4 +1,6 @@
 # mazeutils - Tommy Dougiamas
+import random
+
 from . import g
 
 maze = None
@@ -90,7 +92,7 @@ def get_cell_neighbours(coords: tuple, empty_cell=None):
 	down = (coords[0], coords[1] + 1)
 
 	# list containing all directional tuples
-	all_dirs = [left, right, up, down]
+	all_dirs = [up, down, right, left]
 	visitable_coordinates = []
 
 	if type(empty_cell) == str:

@@ -92,6 +92,9 @@ def main():
 	if not width or not height:
 		cmd_error(f"Please supply a height and a width! Use -x and -y")
 
+	if width < 20 or height < 20:
+		cmd_error("Both width and height must be at least 20.")
+
 	generate.generate(width, height)
 
 	create_output_image.create(g.maze, output_dir)
