@@ -82,33 +82,57 @@ def init_solution_path():
 	Creates a randomized solution path through the maze.
 	"""
 	end = mu.get_cell_by_value("e")
-	counter = mu.get_cell_value((end[0] - 1, end[1]))  # To account for first cell being 0
+	start = mu.get_cell_by_value("s")
+
 	current_cell = (end[0] - 1, end[1])
-	mu.set_cell_value(current_cell, ".")
+
+	start_direction = ""  # direction that start is, in relation to exit
+	opposite_start_direction = ""
+
+	if start[1] < end[1]:  # If entrance y less than exit y
+		start_direction = "left"
+		opposite_start_direction = "right"
+	else:
+		start_direction = "right"
+		opposite_start_direction = "left"
 
 	while True:
-		raw_options = mu.get_cell_neighbours(current_cell, int)
 
-		options = []
-		for cell in raw_options:
-			cell_value = mu.get_cell_value(cell)
+		mu.set_cell_value(current_cell, ".")
+		possible_moves = mu.check_cell_neighbours(current_cell, empty_cell="#")
 
-			if cell_value == counter - 1:
-				options.append(cell)
-
-		random_cell_index = 0
-
-		if len(options) > 1 and random.randint(0, 1) == 0:
-			random_cell_index = random.randint(0, len(options) - 1)
-		elif len(options) == 0:
+		print(possible_moves, current_cell)
+		for i in g.maze: print(i)
+		next_to_edge = mu.next_to_edge(current_cell)
+		if "s" in [mu.get_cell_value(i) for i in mu.get_cell_neighbours(current_cell, empty_cell="#")]:  # We are at entrance!
 			break
 
-		random_cell = options[random_cell_index]
-		mu.set_cell_value(random_cell, ".")
+		if next_to_edge:  # Strict rules if we are at an edge, this is to avoid being trapped.
+			if "down" in possible_moves:
+				possible_moves.remove("down")
 
-		current_cell = random_cell
+			if "up" in possible_moves:
+				try:
+					current_cell = mu.get_cell_neighbours(current_cell, "#", "up")[0]
+				except IndexError:
+					breakpoint()
+				continue
+			elif start_direction in possible_moves:
+				current_cell = mu.get_cell_neighbours(current_cell, "#", start_direction)[0]
+				continue
 
-		counter -= 1
+			elif opposite_start_direction in possible_moves:
+				current_cell = mu.get_cell_neighbours(current_cell, "#", opposite_start_direction)[0]
+				continue
+
+		else:  # not next to edge
+			# Favour start direction slightly
+			if start_direction in possible_moves and random.random() < 0.20:
+				random_direction = start_direction
+			else:
+				random_direction = possible_moves[random.randint(0, len(possible_moves)) - 1]
+
+			continue
 
 
 def expand_row(row_index):
@@ -129,12 +153,11 @@ def generate(width, height):
 	Main function that creates the maze.
 	:param width: Width of the matrix
 	:param height: Height of the matrix
-	:return: A maze matrix
 	"""
 	print("INITIALISING MAZE")
 	init_maze(width, height)
-	print("ENUMERATING MAZE")
-	enumerate_maze()
+	# print("ENUMERATING MAZE")
+	# enumerate_maze()
 	print("CREATING SOLUTION PATH")
 	init_solution_path()
 	print("PREPARING FOR ROW EXPANSION")
@@ -147,4 +170,3 @@ def generate(width, height):
 		if row % 2 == 0:
 			print(f"EXPANDING ROW {row}")
 			expand_row(row)
-
