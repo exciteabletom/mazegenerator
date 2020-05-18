@@ -81,58 +81,41 @@ def init_solution_path():
 	"""
 	Creates a randomized solution path through the maze.
 	"""
+
 	end = mu.get_cell_by_value("e")
 	start = mu.get_cell_by_value("s")
 
-	current_cell = (end[0] - 1, end[1])
+	current_cell = (start[0] + 1, start[1])
+	mu.set_cell_value(current_cell, ".")
 
-	start_direction = ""  # direction that start is, in relation to exit
-	opposite_start_direction = ""
-
-	if start[1] < end[1]:  # If entrance y less than exit y
-		start_direction = "left"
-		opposite_start_direction = "right"
-	else:
-		start_direction = "right"
-		opposite_start_direction = "left"
+	visited_cells = []  # Unordered list that stores all cells that have been already traversed.
+	path_cells = []  # Stores cells that are in the final path.
 
 	while True:
+		path_cells.append(current_cell)
+		visited_cells.append(current_cell)
+		possible_moves = mu.get_cell_neighbours(current_cell, "#")
+		for cell in possible_moves:
+			if cell in visited_cells:
+				breakpoint()
+				possible_moves.remove(cell)
 
-		mu.set_cell_value(current_cell, ".")
-		possible_moves = mu.check_cell_neighbours(current_cell, empty_cell="#")
+		print("CURRENT:", current_cell)
+		print("MOVES:", possible_moves)
+		print("VISITED:", visited_cells)
 
-		print(possible_moves, current_cell)
-		for i in g.maze: print(i)
-		next_to_edge = mu.next_to_edge(current_cell)
-		if "s" in [mu.get_cell_value(i) for i in mu.get_cell_neighbours(current_cell, empty_cell="#")]:  # We are at entrance!
-			break
-
-		if next_to_edge:  # Strict rules if we are at an edge, this is to avoid being trapped.
-			if "down" in possible_moves:
-				possible_moves.remove("down")
-
-			if "up" in possible_moves:
-				try:
-					current_cell = mu.get_cell_neighbours(current_cell, "#", "up")[0]
-				except IndexError:
-					breakpoint()
-				continue
-			elif start_direction in possible_moves:
-				current_cell = mu.get_cell_neighbours(current_cell, "#", start_direction)[0]
-				continue
-
-			elif opposite_start_direction in possible_moves:
-				current_cell = mu.get_cell_neighbours(current_cell, "#", opposite_start_direction)[0]
-				continue
-
-		else:  # not next to edge
-			# Favour start direction slightly
-			if start_direction in possible_moves and random.random() < 0.20:
-				random_direction = start_direction
-			else:
-				random_direction = possible_moves[random.randint(0, len(possible_moves)) - 1]
-
+		if not possible_moves:
+			current_cell = path_cells[-2]
+			path_cells = path_cells[:-2]
 			continue
+
+		else:
+			print(path_cells)
+			breakpoint()
+			if end in possible_moves:
+				break
+
+			current_cell = possible_moves[random.randint(0, len(possible_moves) - 1)]
 
 
 def expand_row(row_index):

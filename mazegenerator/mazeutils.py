@@ -16,7 +16,7 @@ def get_cell_value(coords: tuple):
 	try:
 		return g.maze[coords[0]][coords[1]]
 	# Sometimes we get an IndexError if the maze doesn't have borders
-	# This solution is not perfect however, so it is still best practice to use borders
+	# This solution is not perfect, so it is still best practice to use borders
 	except IndexError:
 		return False
 
@@ -66,7 +66,7 @@ def get_cell_by_value(value):
 	return values[0]
 
 
-def set_cell_value(coords: tuple, value: str or int):
+def set_cell_value(coords: tuple, value: any):
 	"""
 	Sets the value of a cell at the specified coordinates.
 
@@ -78,7 +78,8 @@ def set_cell_value(coords: tuple, value: str or int):
 
 def check_cell_exists(coords):
 	"""
-	Checks if a cell exists within the maze
+	Checks if a cell exists within the maze.
+
 	:param coords: A tuple (x,y), representing a cell
 	:return bool: True if cell exists, False otherwise
 	"""
