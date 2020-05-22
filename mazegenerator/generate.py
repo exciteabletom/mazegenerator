@@ -18,7 +18,7 @@ Example output (5x5):
 
    [["#", "#", "#", "s", "#"],
     ["#", "#", ".", ".", "#"],
-    ["#", ".", ".", "#", "#"],
+    ["#", ".", "#", ".", "#"],
     ["#", ".", ".", ".", "#"],
     ["#", ".", "#", "#", "#"],
     ["#", "e", "#", "#", "#"]]
@@ -28,13 +28,16 @@ from . import g
 
 import os
 import random
+import sys  # for progress bar
 
 random.seed(os.urandom(200))
 
 
 def init_maze(width, height):
 	"""
-	Initialises a maze with all walls except for an entrance and exit.
+	Initialises a maze with only walls
+	:param width: The width of the maze
+	:param height: The height of the maze
 	"""
 	g.maze = []
 	for x in range(width):
@@ -42,93 +45,126 @@ def init_maze(width, height):
 		for y in range(height):
 			g.maze[-1].append("#")
 
-	start_pos = random.randint(1, 5)
-	end_pos = random.randint(len(g.maze[-1]) - 5, len(g.maze[-1]) - 2)
-
-	g.maze[0][start_pos] = "s"
-	g.maze[1][start_pos] = 0
-
-	g.maze[-1][end_pos] = "e"
-
-
-def enumerate_maze():
-	"""
-	TODO
-	"""
-	counter = 0
-
-	while True:  # Enumerate maze
-		current_cells = mu.get_cells_by_value(counter)
-		neighbours = []
-		for cell in current_cells:
-			for i in mu.get_cell_neighbours(cell, "#"):
-				neighbours.append(i)
-
-		if neighbours:
-			for cell in neighbours:
-				mu.set_cell_value(cell, counter + 1)
-		else:
-			break
-
-		counter += 1
-
-	start = mu.get_cell_by_value("s")
-
-	mu.set_cell_value((start[0] + 1, start[1]), 0)
-
 
 def init_solution_path():
 	"""
 	Creates a randomized solution path through the maze.
 	"""
 
-	end = mu.get_cell_by_value("e")
-	start = mu.get_cell_by_value("s")
+	start_pos = random.randint(1, len(g.maze[0]) - 2)
 
-	current_cell = (start[0] + 1, start[1])
-	mu.set_cell_value(current_cell, ".")
+	g.maze[0][start_pos] = "s"
+
+	start = mu.get_cell_by_value("s")
 
 	visited_cells = []  # Unordered list that stores all cells that have been already traversed.
 	path_cells = []  # Stores cells that are in the final path.
+	current_cell = (start[0] + 1, start[1])
+	mu.set_cell_value(current_cell, ".")
 
-	while True:
-		path_cells.append(current_cell)
-		visited_cells.append(current_cell)
-		possible_moves = mu.get_cell_neighbours(current_cell, "#")
-		for cell in possible_moves:
-			if cell in visited_cells:
-				breakpoint()
-				possible_moves.remove(cell)
+	paths_done = False
+	no_reverse = True
+	last_progress_row = 0
 
-		print("CURRENT:", current_cell)
-		print("MOVES:", possible_moves)
-		print("VISITED:", visited_cells)
+	# Path from start
+	while not paths_done:
+		if (current_cell[0] % int(len(g.maze)/10) == 0 and current_cell[0] != last_progress_row)\
+			  or current_cell[0] == len(g.maze) - 2:
+			last_progress_row = current_cell[0]
+			progress_percentage = int(current_cell[0] / (len(g.maze) - 2) * 100)
+			sys.stdout.write(f"Generating maze: {progress_percentage}%\n")
+			sys.stdout.flush()
 
-		if not possible_moves:
-			current_cell = path_cells[-2]
-			path_cells = path_cells[:-2]
-			continue
+		if current_cell[0] == len(g.maze) - 2:  # If on second last row of maze
+			mu.set_cell_value((len(g.maze) - 1, current_cell[1]), "e")
+			#mu.print_maze()
+			break
 
-		else:
-			print(path_cells)
+		directions = mu.get_cell_neighbour_direction_names(current_cell, empty_cell="#")
+		if no_reverse:
+			try:
+				directions.remove("up")
+			except ValueError:  # If up is not in list
+				pass
+
+		rand_direction = directions[random.randint(0, len(directions) - 1)]
+
+		# These lines favour right and left over up and down, so there is more horizontal movement in the path
+		if "right" in directions and random.randint(0, 2) == 0:
+			rand_direction = "right"
+		elif "left" in directions and random.randint(0, 2) == 0:
+			rand_direction = "left"
+
+		if not rand_direction:
 			breakpoint()
-			if end in possible_moves:
-				break
 
-			current_cell = possible_moves[random.randint(0, len(possible_moves) - 1)]
+		if rand_direction == "up":
+			no_reverse = True
+
+		next_cell = mu.get_cell_neighbours(current_cell, "#", rand_direction)[0]
+
+		mu.set_cell_value(next_cell, ".")
+
+		if mu.next_to_edge(current_cell):
+			no_reverse = True
+
+		current_cell = next_cell
 
 
-def expand_row(row_index):
+def expand_rows():
 	"""
 	'expands' rows by adding random paths on, above, and below the rows
-	:param row_index: The row to expand.
 	"""
-	row = g.maze[row_index]
-	for index, cell in enumerate(row):
-		neighbours = mu.get_cell_neighbours((row_index, index), "#")
-		for neighbour in neighbours:
-			if random.randint(0, 10) <= 3:
-				mu.set_cell_value(neighbour, ".")
+
+	def branch(coords, direction):
+		"""
+		Branchs out to the side of a target cell, either left or right, used to add tree like structure
+		:param coords: (x,y) indicating a cell position
+		:param direction: 'left' or 'right'
+		"""
+		if direction == "left":
+			opposite_direction = "right"
+		else:
+			opposite_direction = "left"
+
+		while True:
+			random_int = random.randint(0, 4)
+			if random_int < 1:
+				break
+
+			neighbour_directions = mu.get_cell_neighbour_direction_names(coords, empty_cell="#")
+
+			if direction in neighbour_directions:
+				try:
+					next_coords = mu.get_cell_neighbours(coords, "#", direction)[0]
+				except IndexError:
+					breakpoint()
+				mu.set_cell_value(next_coords, ".")
+				coords = next_coords
+			else:
+				# mu.print_maze()
+				break
+
+	for row_index, row in enumerate(g.maze):
+		if row_index in (0, len(g.maze) - 1):
+			continue
+
+		for cell_index, cell in enumerate(row):
+			if cell_index in (0, len(g.maze[0]) - 1):
+				continue
+
+			cell_coords = (row_index, cell_index)
+			rand = random.randint(0, 10)
+
+			if cell == "#":  # If cell is wall
+				cell_neighbours = mu.get_cell_neighbours(cell_coords, empty_cell=".")
+
+				if len(cell_neighbours) and rand < 4:
+					mu.set_cell_value(cell_coords, ".")
+				elif rand == 9:
+					branch(cell_coords, "left")
+				elif rand == 10:
+					branch(cell_coords, "right")
 
 
 def generate(width, height):
@@ -137,19 +173,7 @@ def generate(width, height):
 	:param width: Width of the matrix
 	:param height: Height of the matrix
 	"""
-	print("INITIALISING MAZE")
 	init_maze(width, height)
-	# print("ENUMERATING MAZE")
-	# enumerate_maze()
-	print("CREATING SOLUTION PATH")
 	init_solution_path()
-	print("PREPARING FOR ROW EXPANSION")
-	for row_index, row in enumerate(g.maze):
-		for cell_index, cell in enumerate(row):
-			if type(cell) == int:
-				g.maze[row_index][cell_index] = "#"
 
-	for row in range(len(g.maze) - 1):
-		if row % 2 == 0:
-			print(f"EXPANDING ROW {row}")
-			expand_row(row)
+	expand_rows()

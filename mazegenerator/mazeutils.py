@@ -6,6 +6,16 @@ from . import g
 maze = None
 
 
+def print_maze():
+	"""
+	Prints out the maze matrix in a human readable format, useful for debugging.
+	"""
+	for i in g.maze:
+		print(i)
+	print("\n")
+
+
+
 def get_cell_value(coords: tuple):
 	"""
 	Gets the value of the cell at the specified coordinates
@@ -95,7 +105,7 @@ def get_cell_neighbours(coords: tuple, empty_cell=None, directions=None):
 	Gets the values of all cells that neighbour the cell at the specified coordinates
 
 	:param coords: Tuple containing the x and y values of the cell to check the neighbours of
-	:param empty_cell: specifies whether an empty cell is an 'int' or 'None'
+	:param empty_cell: specifies whether an empty cell is an int or a specific string
 	:param directions: String containing directions to be checked for.
 	:return: coordinates of all neighbours that have not been visited in
 				a list of tuples. Example: [(x,y), (x,y), (x,y)]
@@ -138,48 +148,42 @@ def get_cell_neighbours(coords: tuple, empty_cell=None, directions=None):
 
 				visitable_coordinates.append(dir)  # Don't remove
 
-	elif empty_cell == int:  # if we constructing a path from an enumerated maze
+	elif empty_cell == int:  # interpret any int as an empty cell
 		for dir in all_dirs:
 			cell_value = get_cell_value(dir)
 
 			if type(cell_value) == int:  # if path has been visited
 				visitable_coordinates.append(dir)
 
-	if not visitable_coordinates:
-		breakpoint()
-
 	return visitable_coordinates
 
 
-def check_cell_neighbours(coords, direction="all", empty_cell="."):
+def get_cell_neighbour_direction_names(coords, direction="all", empty_cell="."):
 	"""
 	Checks which directions can be moved to.
 
 	:param coords: A tuple (x,y).
 	:param direction: String containing a directions to check. If left out will check every directions.
 	:param empty_cell: What value is considered empty
-	:return: A list containing directions that can be moved too. E.g. ["right", "up", "left"].
+	:return: A list containing directions that can be moved to. E.g. ["right", "up", "left"].
 	"""
+
 	# different tuples that contain the coords of all positions
 	# relative to our input tuple
-	left = (coords[0] - 1, coords[1])
-	right = (coords[0] + 1, coords[1])
-	up = (coords[0], coords[1] - 1)
-	down = (coords[0], coords[1] + 1)
+	up = (coords[0] - 1, coords[1])
+	down = (coords[0] + 1, coords[1])
+	left = (coords[0], coords[1] - 1)
+	right = (coords[0], coords[1] + 1)
 
-	all_dirs = [up, down, right, left]
-	dir_lookup = {0: "up", 1: "down", 2: "right", 3: "left"}
+	all_dirs = [(up, "up"), (down, "down"), (right, "right"), (left, "left")]
 	good_dirs = []
 
-	# The following is messy, slow, and shit! TODO
+	# The following is messy and slow TODO
 	if direction == "all":
-		for dir in all_dirs:
-			if is_edge(dir):
-				all_dirs.remove(dir)
-
-		for index, dir in enumerate(all_dirs):
-			if get_cell_value(dir) == empty_cell:
-				good_dirs.append(dir_lookup[index])
+		for cell_data in all_dirs:
+			if is_edge(cell_data[0]) or get_cell_value(cell_data[0]) != empty_cell:
+				continue
+			good_dirs.append(cell_data[1])
 
 	else:
 		if direction == "up":
@@ -201,7 +205,7 @@ def check_cell_neighbours(coords, direction="all", empty_cell="."):
 	return good_dirs
 
 
-def next_to_edge(coords):
+def next_to_edge(coords: tuple):
 	"""
 	Function for checking if a cell is next to the edge of the maze.
 

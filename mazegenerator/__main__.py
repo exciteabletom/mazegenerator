@@ -76,6 +76,11 @@ def main():
 				height = int(cmd_args[index + 1])  # the argument after '-o' is the output path
 				skip_next_arg = True  # We don't need to parse the next arg as it is a file-path
 
+			elif arg == "-xy":
+				height = int(cmd_args[index + 1])
+				width = int(cmd_args[index + 1])
+				skip_next_arg = True
+
 			else:
 				cmd_error(f"Option '{arg}' not recognised.")
 
