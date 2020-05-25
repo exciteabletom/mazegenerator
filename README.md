@@ -1,6 +1,6 @@
 # Maze Generator
 
-This program generates a random black and white maze image. The mazes generated can be solved with my other program <a href="//github.com/exciteabletom/mazesolver">mazesolver</a>
+This program generates a random black and white maze image. The mazes that are generated can be solved with <a href="//github.com/exciteabletom/mazesolver">mazesolver</a>
    
 ## Installing
 
