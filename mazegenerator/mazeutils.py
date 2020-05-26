@@ -1,4 +1,7 @@
-# mazeutils - Tommy Dougiamas
+## mazeutils.py - Tommy Dougiamas
+"""
+Some basic utilites for manipulating and displaying the variable g.maze.
+"""
 import random
 
 from . import g
@@ -199,8 +202,6 @@ def get_cell_neighbour_direction_names(coords, direction="all", empty_cell="."):
 
 		if get_cell_value(all_dirs[index]) == empty_cell and not is_edge(all_dirs[index]):
 			good_dirs.append(direction)
-		else:
-			breakpoint()
 
 	return good_dirs
 

@@ -1,16 +1,13 @@
 ## create_final_image.py - Tommy Dougiamas
 """
-This file holds functions that convert a matrix into a black and white image
+Converts a matrix into a black and white image, and saves it to a specified directory
 """
 
 from PIL import Image  # Pillow >=6.0
 from pathlib import Path  # OS agnostic filesystem paths
-import random
-
-from . import g  # globals
 
 
-def create(matrix, output_dir=None):
+def create(matrix, output_dir):
 	"""
 	Void function that marks the solution path into the image with green and saves the image.
 
@@ -24,10 +21,10 @@ def create(matrix, output_dir=None):
 		for x in range(0, len(matrix[-1])):
 			cell = matrix[y][x]
 
+			color = (0, 0, 0)  # By default color is black
+
 			if cell == "." or cell == "s" or cell == "e":
-				color = (255, 255, 255)
-			elif cell == "#":
-				color = (0, 0, 0)
+				color = (255, 255, 255)  # Change color to black
 
 			output_image.putpixel((x, y), color)
 

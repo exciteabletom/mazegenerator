@@ -11,7 +11,7 @@ Valid Commands
 
 -x, --width   -  The width of the maze. (required)
 -y, --height  -  The height of the maze. (required)
--xy           -  The height and width of a square maze.
+--xy          -  The height and width of a square maze.
 
 -o, --output  -  Output directory.
 

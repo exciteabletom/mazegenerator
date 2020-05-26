@@ -1,6 +1,8 @@
 ## __main__.py - Tommy Dougiamas
-# This file interprets all command line arguments.
-# It passes off the actual processing to other functions.
+"""
+This file interprets all command line arguments.
+It passes off the actual processing to other functions.
+"""
 
 # Local imports
 from . import generate  # width/height --> matrix
@@ -66,17 +68,17 @@ def main():
 		try:
 			if arg == "-o" or arg == "--output":
 				output_dir = cmd_args[index + 1]  # the argument after '-o' is the output path
-				skip_next_arg = True  # We don't need to parse the next arg as it is a file-path
+				skip_next_arg = True
 
 			elif arg == "-x" or arg == "--width":
 				width = int(cmd_args[index + 1])
-				skip_next_arg = True  # We don't need to parse the next arg as it is a file-path
+				skip_next_arg = True
 
 			elif arg == "-y" or arg == "--height":
 				height = int(cmd_args[index + 1])  # the argument after '-o' is the output path
-				skip_next_arg = True  # We don't need to parse the next arg as it is a file-path
+				skip_next_arg = True
 
-			elif arg == "-xy":
+			elif arg == "-xy" or arg == "--xy":
 				height = int(cmd_args[index + 1])
 				width = int(cmd_args[index + 1])
 				skip_next_arg = True
@@ -103,3 +105,4 @@ def main():
 	generate.generate(width, height)
 
 	create_output_image.create(g.maze, output_dir)
+	exit(0)
