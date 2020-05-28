@@ -13,12 +13,16 @@ Valid Commands
 -y, --height  -  The height of the maze. (required)
 --xy          -  The height and width of a square maze.
 
--o, --output  -  Output directory.
+--no-noise    -  Render a solution path without any noise
+--more-paths  -  Generate more paths
+--more-walls  -  Generate more walls
+
+-o, --output  -  Output filepath.
 
 Example Usages 
 ---------------
-mazegenerator -x 30 -y 30 -o path/to/dir/
-mazegenerator -xy 60
+mazegenerator -x 300 -y 2000 -o path/to/dir/mymaze.jpg
+mazegenerator --xy 600
 
 Contact Info
 ---------------

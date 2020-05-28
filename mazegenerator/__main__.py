@@ -43,9 +43,13 @@ def cmd_info(mode):  # Display information and exit the program with exit code 0
 
 
 def main():
-	output_dir = ""  # The directory for the picture to be outputted to
-	width: int= 0
-	height: int= 0
+	output_path = ""  # The path for the picture to be outputted to
+	width: int = 0
+	height: int = 0
+
+	option_no_noise = False
+	option_more_paths = False
+	option_more_walls = False
 
 	cmd_args = sys.argv[1:]  # List storing all command line arguments passed to the program
 	if len(cmd_args) == 0:  # if no arguments were given
@@ -67,7 +71,7 @@ def main():
 
 		try:
 			if arg == "-o" or arg == "--output":
-				output_dir = cmd_args[index + 1]  # the argument after '-o' is the output path
+				output_path = cmd_args[index + 1]  # the argument after '-o' is the output path
 				skip_next_arg = True
 
 			elif arg == "-x" or arg == "--width":
@@ -75,7 +79,7 @@ def main():
 				skip_next_arg = True
 
 			elif arg == "-y" or arg == "--height":
-				height = int(cmd_args[index + 1])  # the argument after '-o' is the output path
+				height = int(cmd_args[index + 1])
 				skip_next_arg = True
 
 			elif arg == "-xy" or arg == "--xy":
@@ -83,18 +87,38 @@ def main():
 				width = int(cmd_args[index + 1])
 				skip_next_arg = True
 
+			elif arg == "--no-noise":
+				option_no_noise = True
+
+			elif arg == "--more-walls":
+				option_more_walls = True
+
+			elif arg == "--more-paths":
+				option_more_paths = True
+
 			else:
 				cmd_error(f"Option '{arg}' not recognised.")
 
-		except IndexError:  # If no parameter is passed to the argument
+		except IndexError:  # If no parameter is passed when an arg expects it
 			cmd_error(f"Option '{arg}' requires an parameter.")
 
-	if not output_dir:
-		output_dir = str(Path.cwd())
-		print(f"No output directory supplied. Using default directory: '{output_dir}'")
+	output_dir = str(Path.cwd())
+	output_name = "maze"
+	if output_path:
+		if os.path.isdir(output_path):
+			output_dir = output_path
+		else:
+			path_lst = output_path.split("/")
+			if path_lst[-1] == "":
+				cmd_error("Invalid directory name.")
+			else:
+				output_name = path_lst[-1]
+				output_dir = output_path[0:-len(output_name)]
+				if ".jpg" in output_name:
+					output_name = output_name.split(".jpg")[0]
+				elif ".jpeg" in output_name:
+					output_name = output_name.split(".jpeg")[0]
 
-	if not os.path.isdir(output_dir):
-		cmd_error(f"Output directory '{output_dir}' doesn't exist or is not a directory")
 
 	if not width or not height:
 		cmd_error(f"Please supply a height and a width! Use -x and -y")
@@ -102,7 +126,16 @@ def main():
 	if width < 20 or height < 20:
 		cmd_error("Both width and height must be at least 20.")
 
-	generate.generate(width, height)
+	noise_setting = "default"
 
-	create_output_image.create(g.maze, output_dir)
+	if option_no_noise:
+		noise_setting = "none"
+	elif option_more_paths:
+		noise_setting = "more"
+	elif option_more_walls:
+		noise_setting = "less"
+
+	generate.generate(width, height, noise_setting)
+
+	create_output_image.create(g.maze, output_dir, output_name)
 	exit(0)

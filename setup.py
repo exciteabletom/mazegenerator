@@ -34,5 +34,5 @@ setup(
 
 	python_requires=">=3.5",
 
-	install_requires=["Pillow>=6.0"]
+	install_requires=["Pillow>=6.0", "progress>=1.5"]
 )

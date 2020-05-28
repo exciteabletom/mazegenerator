@@ -3,7 +3,6 @@
 Some basic utilites for manipulating and displaying the variable g.maze.
 """
 import random
-
 from . import g
 
 maze = None
@@ -16,7 +15,6 @@ def print_maze():
 	for i in g.maze:
 		print(i)
 	print("\n")
-
 
 
 def get_cell_value(coords: tuple):

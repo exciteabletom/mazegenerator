@@ -28,7 +28,7 @@ from . import g
 
 import os
 import random
-import sys  # for progress bar
+import progress.bar  # Progress bars
 
 random.seed(os.urandom(200))
 
@@ -40,10 +40,16 @@ def init_maze(width, height):
 	:param height: The height of the maze
 	"""
 	g.maze = []
-	for x in range(width):
+
+	progress_bar = progress.bar.PixelBar(g.change_string_length("Initialising empty maze", 30), max=height)
+
+	for y in range(height):
+		progress_bar.next()
 		g.maze.append([])
-		for y in range(height):
+		for x in range(width):
 			g.maze[-1].append("#")
+
+	progress_bar.finish()
 
 
 def init_solution_path():
@@ -61,6 +67,8 @@ def init_solution_path():
 	mu.set_cell_value(current_cell, ".")
 
 	paths_done = False
+	# Currently no_reverse will always be True
+	# TODO: Implement the possibility of the path going up
 	no_reverse = True
 
 	if start_pos < len(g.maze[0]) / 2:
@@ -70,8 +78,17 @@ def init_solution_path():
 		h_prefer = "left"
 		not_h_prefer = "right"
 
+	rows = len(g.maze) - 2
+	last_row = 0
+
+	progress_bar = progress.bar.PixelBar(g.change_string_length("Generating random solution", 30), max=rows)
+
 	# Path from start
 	while not paths_done:
+		if current_cell[0] != last_row:
+			last_row = current_cell[0]
+			progress_bar.next()
+
 		if current_cell[0] == len(g.maze) - 2:  # If on second last row of maze
 			mu.set_cell_value((len(g.maze) - 1, current_cell[1]), "e")
 			break
@@ -86,10 +103,19 @@ def init_solution_path():
 
 		rand_direction = directions[random.randint(0, len(directions) - 1)]
 
-		if h_prefer in directions and random.random() < 0.70:
+		if h_prefer in directions and random.random() < 0.60:
 			rand_direction = h_prefer
 
+		if random.random() < 0.3:
+			rand_direction = "down"
+
+		elif random.random() < 0.01:
+			tmp = h_prefer
+			h_prefer = not_h_prefer
+			not_h_prefer = tmp
+
 		if rand_direction == "up":
+			print("UP")
 			no_reverse = True
 
 		next_cell = mu.get_cell_neighbours(current_cell, "#", rand_direction)[0]
@@ -97,19 +123,24 @@ def init_solution_path():
 		mu.set_cell_value(next_cell, ".")
 
 		if mu.next_to_edge(current_cell):
-			if random.random() < 0.20:
+			if random.random() < 0.60:
 				tmp = h_prefer
 				h_prefer = not_h_prefer
 				not_h_prefer = tmp
 
 			no_reverse = True
 
+
 		current_cell = next_cell
 
+	progress_bar.finish()
 
-def expand_rows():
+
+def expand_rows(noise_offset: float):
 	"""
 	'expands' rows by adding random paths on, above, and below the rows
+	:param noise_offset: An offset applied to some of the random float values generated
+	                        A negative offset reduces noise, a positive one increases noise
 	"""
 
 	def branch(coords, direction):
@@ -118,27 +149,32 @@ def expand_rows():
 		:param coords: (x,y) indicating a cell position
 		:param direction: 'left' or 'right'
 		"""
-		if direction == "left":
-			opposite_direction = "right"
-		else:
-			opposite_direction = "left"
 
 		while True:
-			random_int = random.randint(0, 5)
-			if random_int < 1:
+			rand_float = random.random() + noise_offset
+			if rand_float < 0.05:
 				break
 
 			neighbour_directions = mu.get_cell_neighbour_direction_names(coords, empty_cell="#")
 
 			if direction in neighbour_directions:
-				next_coords = mu.get_cell_neighbours(coords, "#", direction)[0]
+				final_direction = direction
+				if 0.05 < rand_float < 0.30+ noise_offset:
+					final_direction = "down"
+
+				try:
+					next_coords = mu.get_cell_neighbours(coords, "#", final_direction)[0]
+				except IndexError:
+					break
+
 				mu.set_cell_value(next_coords, ".")
 				coords = next_coords
 			else:
-				# mu.print_maze()
 				break
 
+	progress_bar = progress.bar.PixelBar(g.change_string_length("Adding noise", 30), max=len(g.maze))
 	for row_index, row in enumerate(g.maze):
+		progress_bar.next()
 		if row_index in (0, len(g.maze) - 1):
 			continue
 
@@ -159,15 +195,22 @@ def expand_rows():
 						branch(cell_coords, "left")
 					else:
 						branch(cell_coords, "right")
+	progress_bar.finish()
 
 
-def generate(width, height):
+def generate(width: int, height: int, noise_setting: str):
 	"""
 	Main function that creates the maze.
 	:param width: Width of the matrix
 	:param height: Height of the matrix
+	:param noise_setting: Either "default", "more", "less", or "none"
 	"""
 	init_maze(width, height)
 	init_solution_path()
-
-	expand_rows()
+	if noise_setting != "none":
+		noise_offset = 0
+		if noise_setting == "less":
+			noise_offset = -0.15
+		elif noise_setting == "more":
+			noise_offset = 0.15
+		expand_rows(noise_offset)
