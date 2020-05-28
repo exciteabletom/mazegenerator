@@ -25,4 +25,3 @@ Normal usage will look something like this: `mazesolver -x 200 -y 300`
 
 - One entrance on the top row and one exit on the bottom row      
        
-Improved generation and more options to customize the output coming soon.
