@@ -17,12 +17,13 @@ Valid Commands
 --more-paths  -  Generate more paths
 --more-walls  -  Generate more walls
 
--o, --output  -  Output filepath.
+-o, --output  -  Output filepath/directory
 
 Example Usages 
 ---------------
-mazegenerator -x 300 -y 2000 -o path/to/dir/mymaze.jpg
-mazegenerator --xy 600
+mazegenerator -x 300 -y 2000 -o path/to/dir/my_cool_maze_name
+mazegenerator --xy 600 --more-paths
+mazegenerator --xy 200 -o path/to/dir/
 
 Contact Info
 ---------------
@@ -32,6 +33,6 @@ Github: https://github.com/exciteabletom
 Licensed under GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html \
 """
 
-version = "0.2"
+version = "1.0"
 version_long = f"mazesolver{version}"
 
