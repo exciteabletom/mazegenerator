@@ -15,7 +15,7 @@ You can run the tool using `mazegenerator`(unix-based) or `mazegenerator.exe` (w
 
 You can use `mazegenerator --help` to get a list of commands.
 
-Normal usage will look something like this: `mazesolver -x 200 -y 300`
+Normal usage will look something like this: `mazegenerator -x 200 -y 300`
 
 
 ## What are the rules for maze images?
