@@ -101,12 +101,12 @@ def check_cell_exists(coords):
 		return False  # Cell doesn't exist
 
 
-def get_cell_neighbours(coords: tuple, empty_cell=None, directions=None):
+def get_cell_neighbours(coords: tuple, empty_cell: str = None, directions: str = None):
 	"""
 	Gets the values of all cells that neighbour the cell at the specified coordinates
 
 	:param coords: Tuple containing the x and y values of the cell to check the neighbours of
-	:param empty_cell: specifies whether an empty cell is an int or a specific string
+	:param empty_cell: specifies an empty cell as a string
 	:param directions: String containing directions to be checked for.
 	:return: coordinates of all neighbours that have not been visited in
 				a list of tuples. Example: [(x,y), (x,y), (x,y)]
@@ -148,13 +148,6 @@ def get_cell_neighbours(coords: tuple, empty_cell=None, directions=None):
 					continue
 
 				visitable_coordinates.append(dir)  # Don't remove
-
-	elif empty_cell == int:  # interpret any int as an empty cell
-		for dir in all_dirs:
-			cell_value = get_cell_value(dir)
-
-			if type(cell_value) == int:  # if path has been visited
-				visitable_coordinates.append(dir)
 
 	return visitable_coordinates
 

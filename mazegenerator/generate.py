@@ -52,26 +52,64 @@ def init_maze(width, height):
 	progress_bar.finish()
 
 
+def branch(coords: tuple, direction: str, no_exit: bool = False, noise_offset: float = 0.0):
+	"""
+	Branches out to the side of a target cell, either left or right, used to add tree like structure
+	:param coords: (x,y) indicating a cell position
+	:param direction: 'left' or 'right'
+	:param no_exit: Bool indicating whether to not stop randomly
+	:param noise_offset: float that affects some of the random chances
+	:return: The cell that was last visited
+	:rtype: tuple
+	"""
+
+	while True:
+		rand_float = random.random() + noise_offset
+		if rand_float < 0.05 and not no_exit:
+			return coords
+
+		neighbour_directions = mu.get_cell_neighbour_direction_names(coords, empty_cell="#")
+
+		if direction in neighbour_directions:
+			final_direction = direction
+			if 0.05 < rand_float < 0.30 + noise_offset:
+				final_direction = "down"
+
+			try:
+				next_coords = mu.get_cell_neighbours(coords, "#", final_direction)[0]
+			except IndexError:
+				return coords
+
+			if not mu.is_edge(next_coords):
+				if next_coords[0] == len(g.maze) - 1:
+					breakpoint()
+				mu.set_cell_value(next_coords, ".")
+				coords = next_coords
+			else:
+				return coords
+		else:
+			return coords
+
+
 def init_solution_path():
 	"""
 	Creates a randomized solution path through the maze.
 	"""
 
+	# Find the beginning of the maze
 	start_pos = random.randint(1, len(g.maze[0]) - 2)
-
 	g.maze[0][start_pos] = "s"
-
 	start = mu.get_cell_by_value("s")
 
+	# Set the current cell to be the cell under start
 	current_cell = (start[0] + 1, start[1])
 	mu.set_cell_value(current_cell, ".")
 
-	paths_done = False
-	# Currently no_reverse will always be True
 	# TODO: Implement the possibility of the path going up
+	# Currently no_reverse will always be True meaning the path can never go upwards
 	no_reverse = True
 
-	if start_pos < len(g.maze[0]) / 2:
+	if random.random() < 0.5:
 		h_prefer = "right"
 		not_h_prefer = "left"
 	else:
@@ -84,7 +122,7 @@ def init_solution_path():
 	progress_bar = progress.bar.PixelBar(g.change_string_length("Generating random solution", 30), max=rows)
 
 	# Path from start
-	while not paths_done:
+	while True:
 		if current_cell[0] != last_row:
 			last_row = current_cell[0]
 			progress_bar.next()
@@ -95,7 +133,7 @@ def init_solution_path():
 
 		directions = mu.get_cell_neighbour_direction_names(current_cell, empty_cell="#")
 
-		if no_reverse:
+		if no_reverse:  # Currently will always be triggered
 			try:
 				directions.remove("up")
 			except ValueError:  # If up is not in list
@@ -103,23 +141,20 @@ def init_solution_path():
 
 		rand_direction = directions[random.randint(0, len(directions) - 1)]
 
-		if h_prefer in directions and random.random() < 0.60:
+		if h_prefer in directions and random.random() < 0.6:
 			rand_direction = h_prefer
 
-		if random.random() < 0.3:
-			rand_direction = "down"
-
 		elif random.random() < 0.01:
-			tmp = h_prefer
-			h_prefer = not_h_prefer
-			not_h_prefer = tmp
-
-		if rand_direction == "up":
-			print("UP")
-			no_reverse = True
+			current_cell = branch(current_cell, h_prefer)
+			progress_bar.next(current_cell[0] - last_row)
+			last_row = current_cell[0]
+			if random.random() < 0.5:
+				tmp = h_prefer
+				h_prefer = not_h_prefer
+				not_h_prefer = tmp
+			continue
 
 		next_cell = mu.get_cell_neighbours(current_cell, "#", rand_direction)[0]
-
 		mu.set_cell_value(next_cell, ".")
 
 		if mu.next_to_edge(current_cell):
@@ -127,9 +162,6 @@ def init_solution_path():
 				tmp = h_prefer
 				h_prefer = not_h_prefer
 				not_h_prefer = tmp
-
-			no_reverse = True
-
 
 		current_cell = next_cell
 
@@ -143,39 +175,13 @@ def expand_rows(noise_offset: float):
 	                        A negative offset reduces noise, a positive one increases noise
 	"""
 
-	def branch(coords, direction):
-		"""
-		Branchs out to the side of a target cell, either left or right, used to add tree like structure
-		:param coords: (x,y) indicating a cell position
-		:param direction: 'left' or 'right'
-		"""
-
-		while True:
-			rand_float = random.random() + noise_offset
-			if rand_float < 0.05:
-				break
-
-			neighbour_directions = mu.get_cell_neighbour_direction_names(coords, empty_cell="#")
-
-			if direction in neighbour_directions:
-				final_direction = direction
-				if 0.05 < rand_float < 0.30+ noise_offset:
-					final_direction = "down"
-
-				try:
-					next_coords = mu.get_cell_neighbours(coords, "#", final_direction)[0]
-				except IndexError:
-					break
-
-				mu.set_cell_value(next_coords, ".")
-				coords = next_coords
-			else:
-				break
-
 	progress_bar = progress.bar.PixelBar(g.change_string_length("Adding noise", 30), max=len(g.maze))
 	for row_index, row in enumerate(g.maze):
 		progress_bar.next()
-		if row_index in (0, len(g.maze) - 1):
+		if row_index % 3 == 0:
+			continue
+
+		if row_index == len(g.maze) - 1:
 			continue
 
 		for cell_index, cell in enumerate(row):
@@ -192,25 +198,29 @@ def expand_rows(noise_offset: float):
 					mu.set_cell_value(cell_coords, ".")
 				elif rand in (2, 3):
 					if random.randint(0, 1) == 1:
-						branch(cell_coords, "left")
+						branch(cell_coords, "left", random.random() < 0.001, noise_offset)
 					else:
-						branch(cell_coords, "right")
+						branch(cell_coords, "right", random.random() < 0.001, noise_offset)
 	progress_bar.finish()
 
 
-def generate(width: int, height: int, noise_setting: str):
+def generate(width: int, height: int, noise_bias: str):
 	"""
 	Main function that creates the maze.
 	:param width: Width of the matrix
 	:param height: Height of the matrix
-	:param noise_setting: Either "default", "more", "less", or "none"
+	:param noise_bias: Either "wall", "less", or "none"
 	"""
 	init_maze(width, height)
 	init_solution_path()
-	if noise_setting != "none":
+	if noise_bias != "none":  # If we should generate noise
 		noise_offset = 0
-		if noise_setting == "less":
-			noise_offset = -0.15
-		elif noise_setting == "more":
-			noise_offset = 0.15
+		if noise_bias == "walls":  # Draw less paths
+			print("Creating more walls")
+			noise_offset = -0.07
+		elif noise_bias == "paths":  # Draw more paths
+			print("Creating more paths")
+			noise_offset = 0.25
 		expand_rows(noise_offset)
+	else:
+		print("Only rendering solution path")

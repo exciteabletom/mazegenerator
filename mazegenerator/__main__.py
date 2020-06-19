@@ -13,10 +13,15 @@ from . import g  # global variables
 # Stdlib imports
 import sys
 import os
-from pathlib import Path  # Used to fix incompatibilities between windows and unix-based file paths "/" vs "\\"
+from pathlib import Path  # Used to fix incompatibilities between windows and unix-based file paths ("/" vs "\\")
 
 
 def cmd_error(message=""):  # Display error message and exit the program with exit code 1
+	"""
+	Displays a user-friendly error message and exits 1
+
+	:param message: Message for error
+	"""
 	if message:
 		print(f"ERROR: {message}\n")
 
@@ -25,6 +30,9 @@ def cmd_error(message=""):  # Display error message and exit the program with ex
 
 
 def cmd_info(mode):  # Display information and exit the program with exit code 0
+	"""
+	Displays a user friendly information string from 'strings' and exits 0.
+	"""
 	if mode == "help":
 		print(strings.help_message)
 
@@ -35,14 +43,20 @@ def cmd_info(mode):  # Display information and exit the program with exit code 0
 		print(strings.maze_rules)
 
 	else:
+		# If the mode was not valid throw error, so then it doesn't get into prod
 		raise ValueError(
-			# If the mode was not valid warn, so then it doesn't get into prod
 			f"DEV_ERROR: Option '{mode}' is not valid for cmd_info ")
 
 	exit(0)
 
 
 def main():
+	"""
+	Interprets command line arguments and passes on to generate.generate()
+	Then runs create_output_image.create()
+
+	Exit code 0 if successful, code 1 if error occurs
+	"""
 	output_path = ""  # The path for the picture to be outputted to
 	width: int = 0
 	height: int = 0
@@ -60,6 +74,9 @@ def main():
 
 	elif "-v" in cmd_args or "--version" in cmd_args:
 		cmd_info("version")
+
+	elif "--maze-rules" in cmd_args:
+		cmd_info("maze_rules")
 
 	skip_next_arg = False  # Boolean indicating whether the current iteration should be skipped
 
@@ -102,40 +119,43 @@ def main():
 		except IndexError:  # If no parameter is passed when an arg expects it
 			cmd_error(f"Option '{arg}' requires an parameter.")
 
+	# This block is designed to work if:
+	# 1. Only a directory name is passed with or without a trailing '/' eg Pictures/ and Pictures
+	# 2. An image name is passed with/without a .jpg extension  eg. mymaze.jpg and mymaze
+	# 3. A directory name is passed with an image name  eg. Pictures/mymaze.jpg or Pictures/mymaze
 	output_dir = str(Path.cwd())
 	output_name = "maze"
 	if output_path:
-		if os.path.isdir(output_path):
+		if os.path.isdir(output_path):  # If only directory is specified
 			output_dir = output_path
 		else:
 			path_lst = output_path.split("/")
-			if path_lst[-1] == "":
+			if path_lst[-1] == "":  # If directory was specified, but not valid
 				cmd_error("Invalid directory name.")
-			else:
+
+			elif len(path_lst) == 1:  # If only image name is specified with no directory
+				output_name = path_lst[0].replace(".jpg", "").replace(".jpeg", "")
+
+			else:  # If directory and image name are specified
 				output_name = path_lst[-1]
 				output_dir = output_path[0:-len(output_name)]
-				if ".jpg" in output_name:
-					output_name = output_name.split(".jpg")[0]
-				elif ".jpeg" in output_name:
-					output_name = output_name.split(".jpeg")[0]
-
+				output_name = output_name.replace(".jpg", "").replace(".jpeg", "")
 
 	if not width or not height:
 		cmd_error(f"Please supply a height and a width! Use -x and -y")
 
-	if width < 20 or height < 20:
+	if width < 20 or height < 20:  # Generation doesn't work with super small mazes
 		cmd_error("Both width and height must be at least 20.")
 
-	noise_setting = "default"
+	noise_bias = "default"
 
-	if option_no_noise:
-		noise_setting = "none"
+	if option_no_noise:  # creates only a path
+		noise_bias = "none"
 	elif option_more_paths:
-		noise_setting = "more"
+		noise_bias = "paths"
 	elif option_more_walls:
-		noise_setting = "less"
+		noise_bias = "walls"
 
-	generate.generate(width, height, noise_setting)
+	generate.generate(width, height, noise_bias)
 
 	create_output_image.create(g.maze, output_dir, output_name)
-	exit(0)
