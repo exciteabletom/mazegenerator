@@ -48,6 +48,6 @@ Check out some of the example mazes at https://github.com/exciteabletom/mazegene
 """
 
 
-version = "1.0"
+version = "1.1"
 version_long = f"mazesolver{version}"
 
