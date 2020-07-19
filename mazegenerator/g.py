@@ -1,4 +1,7 @@
+import os
 maze = []
+
+seed = os.urandom(200)
 
 
 def change_string_length(string, length):

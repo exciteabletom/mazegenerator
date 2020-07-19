@@ -45,7 +45,7 @@ def cmd_info(mode):  # Display information and exit the program with exit code 0
 	else:
 		# If the mode was not valid throw error, so then it doesn't get into prod
 		raise ValueError(
-			f"DEV_ERROR: Option '{mode}' is not valid for cmd_info ")
+			f"DEV_ERROR: Option '{mode}' is not valid for cmd_info. If you are seeing this please contact tom@digitalnook.net")
 
 	exit(0)
 
@@ -69,6 +69,7 @@ def main():
 	if len(cmd_args) == 0:  # if no arguments were given
 		cmd_error("No arguments provided.")
 
+	# If these arguments are passed we need to display some information and exit 0
 	if "--help" in cmd_args or "-h" in cmd_args:
 		cmd_info("help")
 
@@ -80,28 +81,43 @@ def main():
 
 	skip_next_arg = False  # Boolean indicating whether the current iteration should be skipped
 
+
 	# Loop handling arguments that have params like "-i" and "-o"
+	# TODO: Probably a better way to handle these and still not use a lib (bloat)
 	for index, arg in enumerate(cmd_args):
-		if skip_next_arg:
+		if skip_next_arg:  # If this is true skip the current iteration
 			skip_next_arg = False
 			continue
 
 		try:
-			if arg == "-o" or arg == "--output":
+			if arg in ("-o", "--output"):
 				output_path = cmd_args[index + 1]  # the argument after '-o' is the output path
 				skip_next_arg = True
 
-			elif arg == "-x" or arg == "--width":
+			elif arg in ("-x", "--width"):
 				width = int(cmd_args[index + 1])
 				skip_next_arg = True
 
-			elif arg == "-y" or arg == "--height":
+			elif arg in ("-y", "--height"):
 				height = int(cmd_args[index + 1])
 				skip_next_arg = True
 
-			elif arg == "-xy" or arg == "--xy":
+			elif arg in ("-xy", "--xy"):
 				height = int(cmd_args[index + 1])
 				width = int(cmd_args[index + 1])
+				skip_next_arg = True
+
+			elif arg in ("--seed", "-s"):
+				g.seed = cmd_args[index + 1]
+
+				# Try for integer seeds if possible
+				try:
+					g.seed = int(g.seed)
+				except ValueError:
+					pass
+
+				print("here:",g.seed)
+
 				skip_next_arg = True
 
 			elif arg == "--no-noise":
@@ -121,7 +137,7 @@ def main():
 
 	# This block is designed to work if:
 	# 1. Only a directory name is passed with or without a trailing '/' eg Pictures/ and Pictures
-	# 2. An image name is passed with/without a .jpg extension  eg. mymaze.jpg and mymaze
+	# 2. An image name is passed with/without a .jpg or .jpeg extension  eg. mymaze.jpg and mymaze
 	# 3. A directory name is passed with an image name  eg. Pictures/mymaze.jpg or Pictures/mymaze
 	output_dir = str(Path.cwd())
 	output_name = "maze"
@@ -142,7 +158,9 @@ def main():
 				output_name = output_name.replace(".jpg", "").replace(".jpeg", "")
 
 	if not width or not height:
-		cmd_error(f"Please supply a height and a width! Use -x and -y")
+		width = 50
+		height = 50
+		print("No height or width supplied, defaulting to 50x50")
 
 	if width < 20 or height < 20:  # Generation doesn't work with super small mazes
 		cmd_error("Both width and height must be at least 20.")
@@ -159,3 +177,4 @@ def main():
 	generate.generate(width, height, noise_bias)
 
 	create_output_image.create(g.maze, output_dir, output_name)
+

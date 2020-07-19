@@ -1,6 +1,6 @@
 ## strings.py - Tommy Dougiamas
 """
-This file contains all static strings.
+This file contains all constant strings.
 """
 
 help_message = """\
@@ -17,6 +17,8 @@ Valid Commands
 --no-noise    -  Render a solution path without any noise
 --more-paths  -  Generate more paths
 --more-walls  -  Generate more walls
+
+-s, --seed    -  Specifies a seed to be used for the random number generator
 
 -o, --output  -  Output filepath/directory
 

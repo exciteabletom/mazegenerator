@@ -1,18 +1,20 @@
 ## generate.py - Tommy Dougiamas
 """
-Creates a maze matrix that can be converted into an image:
+Creates a randomised maze matrix that can be converted into an image.
+It is assumed that the global maze matrix is stored at ./g.py:maze.
 
 The maze is compatible with mazesolver (https://github.com/exciteabletom/mazesolver)
+
+There are two rules for the output matrix that make it compatible:
+
+ - Walls around the entire maze
+ - One entrance on the top row and one exit on the bottom row
+
 The maze is represented in the matrix as follows:
  - Walls:   "#"
  - Paths:   "."
  - Start:   "s"
  - End:     "e"
-
-There are two rules for the output matrix that make it compatible with mazesolver:
-
- - Walls around the entire maze
- - One entrance on the top row and one exit on the bottom row
 
 Example output (5x5):
 
@@ -20,17 +22,22 @@ Example output (5x5):
     ["#", "#", ".", ".", "#"],
     ["#", ".", "#", ".", "#"],
     ["#", ".", ".", ".", "#"],
-    ["#", ".", "#", "#", "#"],
+    ["#", ".", "#", ".", "#"],
     ["#", "e", "#", "#", "#"]]
 """
+# Relative
 from . import mazeutils as mu
 from . import g
 
+# Standard libraries
 import os
 import random
+
+# Third party
 import progress.bar  # Progress bars
 
-random.seed(os.urandom(200))
+# Use 200 random bytes to seed the random number generator
+random.seed(g.seed)
 
 
 def init_maze(width, height):
@@ -54,9 +61,10 @@ def init_maze(width, height):
 
 def branch(coords: tuple, direction: str, no_exit: bool = False, noise_offset: float = 0.0):
 	"""
-	Branches out to the side of a target cell, either left or right, used to add tree like structure
+	Branches out to the side of a target cell, either left, right or down, used to add tree like structure
+
 	:param coords: (x,y) indicating a cell position
-	:param direction: 'left' or 'right'
+	:param direction: 'left', 'right' or 'down'
 	:param no_exit: Bool indicating whether to not stop randomly
 	:param noise_offset: float that affects some of the random chances
 	:return: The cell that was last visited
@@ -106,8 +114,8 @@ def init_solution_path():
 	mu.set_cell_value(current_cell, ".")
 
 	# TODO: Implement the possibility of the path going up
-	# Currently no_reverse will always be True meaning the path can never go upwards
-	no_reverse = True
+	# Currently no_up will always be True meaning the path can never go upwards
+	no_up = True
 
 	if random.random() < 0.5:
 		h_prefer = "right"
@@ -131,14 +139,13 @@ def init_solution_path():
 			mu.set_cell_value((len(g.maze) - 1, current_cell[1]), "e")
 			break
 
+		# Possible directions we could travel to
 		directions = mu.get_cell_neighbour_direction_names(current_cell, empty_cell="#")
 
-		if no_reverse:  # Currently will always be triggered
-			try:
-				directions.remove("up")
-			except ValueError:  # If up is not in list
-				pass
+		if no_up and "up" in directions:  # Currently will always be triggered
+			directions.remove("up")
 
+		# A random direction
 		rand_direction = directions[random.randint(0, len(directions) - 1)]
 
 		if h_prefer in directions and random.random() < 0.6:
@@ -174,8 +181,8 @@ def expand_rows(noise_offset: float):
 	:param noise_offset: An offset applied to some of the random float values generated
 	                        A negative offset reduces noise, a positive one increases noise
 	"""
-
 	progress_bar = progress.bar.PixelBar(g.change_string_length("Adding noise", 30), max=len(g.maze))
+
 	for row_index, row in enumerate(g.maze):
 		progress_bar.next()
 		if row_index % 3 == 0:
@@ -197,10 +204,20 @@ def expand_rows(noise_offset: float):
 				if len(cell_neighbours) and rand < 1:
 					mu.set_cell_value(cell_coords, ".")
 				elif rand in (2, 3):
-					if random.randint(0, 1) == 1:
-						branch(cell_coords, "left", random.random() < 0.001, noise_offset)
+					rand_direction = ""
+
+					# Rare wildcard for more randomness TODO: Maybe too expensive to compute? 
+					if random.random() < 0.005: 
+						rand_direction = "down"
+					elif rand == 2:
+						rand_direction = "left"
+					elif rand == 3:
+						rand_direction = "right"
 					else:
-						branch(cell_coords, "right", random.random() < 0.001, noise_offset)
+						raise ValueError("DEVERROR: Random integer out of range")
+
+					branch(cell_coords, rand_direction, random.random() < 0.001, noise_offset)
+
 	progress_bar.finish()
 
 
