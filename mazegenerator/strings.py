@@ -6,26 +6,25 @@ This file contains all constant strings.
 help_message = """\
 Valid Commands
 ---------------
--h, --help    -  Prints this help page and exits.
--v, --version -  Prints the version of the program and exits.
---maze-rules  -  Prints the rules for maze images.
+-h, --help      -  Prints this help page and exits.
+-v, --version   -  Prints the version of the program and exits.
+--maze-rules    -  Prints the rules for maze images.
 
--x, --width   -  The width of the maze. (required)
--y, --height  -  The height of the maze. (required)
---xy          -  The height and width of a square maze.
+-x, --width     -  The width of the maze. (required)
+-y, --height    -  The height of the maze. (required)
+--xy            -  The height and width of a square maze.
 
---no-noise    -  Render a solution path without any noise
---more-paths  -  Generate more paths
---more-walls  -  Generate more walls
+--no-noise      -  Render a solution path without any noise
+--favour-paths  -  Generate more paths
+--favour-walls  -  Generate more walls
 
--s, --seed    -  Specifies a seed to be used for the random number generator
-
--o, --output  -  Output filepath/directory
+-s, --seed      -  Specifies a seed to be used for the random number generator
+-o, --output    -  Output filepath/directory
 
 Example Usages 
 ---------------
 mazegenerator -x 300 -y 2000 -o path/to/dir/my_cool_maze_name
-mazegenerator --xy 600 --more-paths
+mazegenerator --xy 600 --favour-paths
 mazegenerator --xy 200 -o path/to/dir/
 
 Contact Info

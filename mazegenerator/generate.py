@@ -36,8 +36,18 @@ import random
 # Third party
 import progress.bar  # Progress bars
 
-# Use 200 random bytes to seed the random number generator
-random.seed(g.seed)
+def check_seed():
+	"""
+	Creates a random seed if one is not defined already
+	"""
+	if not g.seed:  # If no user-defined seed
+		# Create random seed
+		random_chars = ["a", "b", "c", "d", "e", "f", "g", "h", "x", "y", "z", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]
+		for _ in range(15):
+			g.seed = g.seed + random_chars[random.randint(0, len(random_chars) - 1)]
+
+	print(f"Using seed '{g.seed}'")
+	random.seed(g.seed)
 
 
 def init_maze(width, height):
@@ -80,7 +90,7 @@ def branch(coords: tuple, direction: str, no_exit: bool = False, noise_offset: f
 
 		if direction in neighbour_directions:
 			final_direction = direction
-			if 0.05 < rand_float < 0.30 + noise_offset:
+			if 0.05 < rand_float < 0.45 + noise_offset:
 				final_direction = "down"
 
 			try:
@@ -226,18 +236,23 @@ def generate(width: int, height: int, noise_bias: str):
 	Main function that creates the maze.
 	:param width: Width of the matrix
 	:param height: Height of the matrix
-	:param noise_bias: Either "wall", "less", or "none"
+	:param noise_bias: Either "wall", "less", "none", or and empty string indicating no bias
 	"""
+	check_seed()
 	init_maze(width, height)
 	init_solution_path()
+
 	if noise_bias != "none":  # If we should generate noise
 		noise_offset = 0
+
 		if noise_bias == "walls":  # Draw less paths
 			print("Creating more walls")
-			noise_offset = -0.07
+			noise_offset = -0.09
+
 		elif noise_bias == "paths":  # Draw more paths
 			print("Creating more paths")
 			noise_offset = 0.25
+
 		expand_rows(noise_offset)
 	else:
 		print("Only rendering solution path")

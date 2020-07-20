@@ -1,7 +1,12 @@
 import os
+
+# Maze Matrix
+global maze
 maze = []
 
-seed = os.urandom(200)
+# Seed used to seed the RNG
+global seed 
+seed = ""
 
 
 def change_string_length(string, length):

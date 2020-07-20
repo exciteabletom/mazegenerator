@@ -15,7 +15,6 @@ import sys
 import os
 from pathlib import Path  # Used to fix incompatibilities between windows and unix-based file paths ("/" vs "\\")
 
-
 def cmd_error(message=""):  # Display error message and exit the program with exit code 1
 	"""
 	Displays a user-friendly error message and exits 1
@@ -23,9 +22,9 @@ def cmd_error(message=""):  # Display error message and exit the program with ex
 	:param message: Message for error
 	"""
 	if message:
-		print(f"ERROR: {message}\n")
+		print(f"ERROR: {message}\n", file=sys.stderr)
 
-	print("See --help for more info.")
+	print("See --help for more info.", file=sys.stderr)
 	exit(1)
 
 
@@ -83,7 +82,7 @@ def main():
 
 
 	# Loop handling arguments that have params like "-i" and "-o"
-	# TODO: Probably a better way to handle these and still not use a lib (bloat)
+	# TODO: Probably a better way to handle these and still not use a library
 	for index, arg in enumerate(cmd_args):
 		if skip_next_arg:  # If this is true skip the current iteration
 			skip_next_arg = False
@@ -109,24 +108,16 @@ def main():
 
 			elif arg in ("--seed", "-s"):
 				g.seed = cmd_args[index + 1]
-
-				# Try for integer seeds if possible
-				try:
-					g.seed = int(g.seed)
-				except ValueError:
-					pass
-
-				print("here:",g.seed)
-
+				print(g.seed)
 				skip_next_arg = True
 
 			elif arg == "--no-noise":
 				option_no_noise = True
 
-			elif arg == "--more-walls":
+			elif arg in ("--favour-walls", "--favor-walls"):
 				option_more_walls = True
 
-			elif arg == "--more-paths":
+			elif arg in ("--favour-paths", "--favor-paths"):
 				option_more_paths = True
 
 			else:
