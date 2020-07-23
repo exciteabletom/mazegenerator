@@ -1,11 +1,9 @@
 import os
 
 # Maze Matrix
-global maze
 maze = []
 
 # Seed used to seed the RNG
-global seed 
 seed = ""
 
 
