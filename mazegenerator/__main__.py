@@ -73,7 +73,7 @@ def main():
 	if "--help" in cmd_args or "-h" in cmd_args:
 		cmd_info("help")
 
-	elif "-v" in cmd_args or "--VERSION" in cmd_args:
+	elif "-v" in cmd_args or "--version" in cmd_args:
 		cmd_info("VERSION")
 
 	elif "--maze-rules" in cmd_args:
