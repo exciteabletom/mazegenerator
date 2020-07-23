@@ -4,16 +4,17 @@ This file interprets all command line arguments.
 It passes off the actual processing to other functions.
 """
 
-# Local imports
+# Stdlib imports
+import sys
+import os
+from pathlib import Path  # Used to fix incompatibilities between windows and unix-based file paths ("/" vs "\\")
+
+# Relative imports
 from . import generate  # width/height --> matrix
 from . import create_output_image  # matrix --> image
 from . import strings  # Static strings
 from . import g  # global variables
 
-# Stdlib imports
-import sys
-import os
-from pathlib import Path  # Used to fix incompatibilities between windows and unix-based file paths ("/" vs "\\")
 
 def cmd_error(message=""):  # Display error message and exit the program with exit code 1
 	"""
@@ -25,7 +26,7 @@ def cmd_error(message=""):  # Display error message and exit the program with ex
 		print(f"ERROR: {message}\n", file=sys.stderr)
 
 	print("See --help for more info.", file=sys.stderr)
-	exit(1)
+	sys.exit(1)
 
 
 def cmd_info(mode):  # Display information and exit the program with exit code 0
@@ -33,20 +34,20 @@ def cmd_info(mode):  # Display information and exit the program with exit code 0
 	Displays a user friendly information string from 'strings' and exits 0.
 	"""
 	if mode == "help":
-		print(strings.help_message)
+		print(strings.HELP)
 
-	elif mode == "version":
-		print(strings.version)
+	elif mode == "VERSION":
+		print(strings.VERSION)
 
-	elif mode == "maze_rules":
-		print(strings.maze_rules)
+	elif mode == "MAZE_RULES":
+		print(strings.MAZE_RULES)
 
 	else:
 		# If the mode was not valid throw error, so then it doesn't get into prod
-		raise ValueError(
-			f"DEV_ERROR: Option '{mode}' is not valid for cmd_info. If you are seeing this please contact tom@digitalnook.net")
+		raise ValueError(f"DEV_ERROR: Option '{mode}' is not valid for cmd_info. \
+						If you are seeing this please contact tom@digitalnook.net")
 
-	exit(0)
+	sys.exit(0)
 
 
 def main():
@@ -72,14 +73,13 @@ def main():
 	if "--help" in cmd_args or "-h" in cmd_args:
 		cmd_info("help")
 
-	elif "-v" in cmd_args or "--version" in cmd_args:
-		cmd_info("version")
+	elif "-v" in cmd_args or "--VERSION" in cmd_args:
+		cmd_info("VERSION")
 
 	elif "--maze-rules" in cmd_args:
-		cmd_info("maze_rules")
+		cmd_info("MAZE_RULES")
 
 	skip_next_arg = False  # Boolean indicating whether the current iteration should be skipped
-
 
 	# Loop handling arguments that have params like "-i" and "-o"
 	# TODO: Probably a better way to handle these and still not use a library
@@ -168,4 +168,3 @@ def main():
 	generate.generate(width, height, noise_bias)
 
 	create_output_image.create(g.maze, output_dir, output_name)
-

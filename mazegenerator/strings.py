@@ -3,7 +3,7 @@
 This file contains all constant strings.
 """
 
-help_message = """\
+HELP = """\
 Valid Commands
 ---------------
 -h, --help      -  Prints this help page and exits.
@@ -35,7 +35,7 @@ Github: https://github.com/exciteabletom
 Licensed under GPLv3: https://www.gnu.org/licenses/gpl-3.0.en.html \
 """
 
-maze_rules = """\
+MAZE_RULES = """\
 What are the rules for maze images?
 ---------------
 
@@ -49,6 +49,6 @@ Check out some of the example mazes at https://github.com/exciteabletom/mazegene
 """
 
 
-version = "1.1"
-version_long = f"mazesolver{version}"
+VERSION = "1.2"
+VERSION_LONG = f"mazegenerator{VERSION}"
 

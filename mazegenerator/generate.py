@@ -1,4 +1,3 @@
-## generate.py - Tommy Dougiamas
 """
 Creates a randomised maze matrix that can be converted into an image.
 It is assumed that the global maze matrix is stored at ./g.py:maze.
@@ -25,9 +24,7 @@ Example output (5x5):
     ["#", ".", "#", ".", "#"],
     ["#", "e", "#", "#", "#"]]
 """
-# Relative
-from . import mazeutils as mu
-from . import g
+## generate.py - Tommy Dougiamas
 
 # Standard libraries
 import os
@@ -36,17 +33,29 @@ import random
 # Third party
 import progress.bar  # Progress bars
 
+# Relative
+from . import mazeutils as mu
+from . import g
+
+
 def check_seed():
 	"""
 	Creates a random seed if one is not defined already
 	"""
 	if not g.seed:  # If no user-defined seed
 		# Create random seed
-		random_chars = ["a", "b", "c", "d", "e", "f", "g", "h", "x", "y", "z", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]
+		random_chars = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s",
+                            "t", "u", "v", "w" "x", "y", "z", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]
 		for _ in range(15):
-			g.seed = g.seed + random_chars[random.randint(0, len(random_chars) - 1)]
+			rand_bool = random.random() < 0.5
+			rand_char = random_chars[random.randint(0, len(random_chars) - 1)]
 
-	print(f"Using seed '{g.seed}'")
+			if rand_bool:
+				rand_char = rand_char.upper()
+
+			g.seed = g.seed + rand_char
+
+	print(f"Using seed '{g.seed}'\n")
 	random.seed(g.seed)
 
 
@@ -60,10 +69,10 @@ def init_maze(width, height):
 
 	progress_bar = progress.bar.PixelBar(g.change_string_length("Initialising empty maze", 30), max=height)
 
-	for y in range(height):
+	for _ in range(height):
 		progress_bar.next()
 		g.maze.append([])
-		for x in range(width):
+		for _ in range(width):
 			g.maze[-1].append("#")
 
 	progress_bar.finish()
@@ -166,9 +175,7 @@ def init_solution_path():
 			progress_bar.next(current_cell[0] - last_row)
 			last_row = current_cell[0]
 			if random.random() < 0.5:
-				tmp = h_prefer
-				h_prefer = not_h_prefer
-				not_h_prefer = tmp
+				h_prefer, not_h_prefer = (not_h_prefer, h_prefer)
 			continue
 
 		next_cell = mu.get_cell_neighbours(current_cell, "#", rand_direction)[0]
@@ -176,9 +183,7 @@ def init_solution_path():
 
 		if mu.next_to_edge(current_cell):
 			if random.random() < 0.60:
-				tmp = h_prefer
-				h_prefer = not_h_prefer
-				not_h_prefer = tmp
+				h_prefer, not_h_prefer = (not_h_prefer, h_prefer)
 
 		current_cell = next_cell
 
@@ -211,13 +216,13 @@ def expand_rows(noise_offset: float):
 			if cell == "#":  # If cell is wall
 				cell_neighbours = mu.get_cell_neighbours(cell_coords, empty_cell=".")
 
-				if len(cell_neighbours) and rand < 1:
+				if cell_neighbours and rand < 1:
 					mu.set_cell_value(cell_coords, ".")
 				elif rand in (2, 3):
 					rand_direction = ""
 
 					# Rare wildcard for more randomness TODO: Maybe too expensive to compute? 
-					if random.random() < 0.005: 
+					if random.random() < 0.005:
 						rand_direction = "down"
 					elif rand == 2:
 						rand_direction = "left"

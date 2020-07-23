@@ -31,6 +31,8 @@ def create(matrix: list, output_dir: str, output_name: str):
 
 	out_path = Path(f"{output_dir}/{output_name}.jpg")  # Where the image will be saved to
 
+	print("\nSaving Image... This may take a long time for bigger mazes")
+
 	output_image.save(out_path, subsampling=0, quality=100)  # Save the image with no compression or sub-sampling
 
 	print(f"Maze was saved at {out_path}")  # Make sure the user knows where the image was saved

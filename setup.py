@@ -3,13 +3,13 @@ from setuptools import setup
 import sys
 from mazegenerator import strings
 
-print(strings.version)
+print(strings.VERSION)
 with open("./README.md", encoding="utf-8") as readme:
 	long_description = readme.read()
 
 setup(
 	name="mazegenerator",
-	version=strings.version,
+	version=strings.VERSION,
 
 	description="A maze generation algorithm for image-based mazes.",
 	long_description=long_description,

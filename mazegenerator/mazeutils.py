@@ -3,6 +3,7 @@
 Some basic utilites for manipulating and displaying the variable g.maze.
 """
 import random
+
 from . import g
 
 maze = None
