@@ -108,7 +108,6 @@ def main():
 
 			elif arg in ("--seed", "-s"):
 				g.seed = cmd_args[index + 1]
-				print(g.seed)
 				skip_next_arg = True
 
 			elif arg == "--no-noise":
