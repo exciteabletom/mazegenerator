@@ -15,6 +15,8 @@ def create(matrix: list, output_dir: str, output_name: str):
 	:param output_dir: String with User-supplied path to a directory where the image will be saved.
 	:param output_name: A name for the image file
 	"""
+	print("\nSaving Image... This may take a long time for bigger mazes")
+
 	# open the image that was inputted
 	output_image = Image.new("RGB", [len(matrix[0]), len(matrix)], (255, 255, 255))
 
@@ -31,7 +33,6 @@ def create(matrix: list, output_dir: str, output_name: str):
 
 	out_path = Path(f"{output_dir}/{output_name}.jpg")  # Where the image will be saved to
 
-	print("\nSaving Image... This may take a long time for bigger mazes")
 
 	output_image.save(out_path, subsampling=0, quality=100)  # Save the image with no compression or sub-sampling
 
