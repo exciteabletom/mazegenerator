@@ -49,6 +49,6 @@ Check out some of the example mazes at https://github.com/exciteabletom/mazegene
 """
 
 
-VERSION = "1.2"
+VERSION = "1.2.1"
 VERSION_LONG = f"mazegenerator{VERSION}"
 
